@@ -26,7 +26,7 @@ def show_home():
                             name="Latest")
 
 # All items of a category
-@app.route('/catalog/<path:category_name>')
+@app.route('/catalog/<string:category_name>')
 def show_category(category_name):
     categories = session.query(Category).all()
     category = session.query(Category).filter_by(name=category_name).first()
@@ -37,34 +37,41 @@ def show_category(category_name):
     
 
 # Display a item description
-@app.route('/catalog/<path:category_name>/<string:item_name>')
+@app.route('/catalog/<string:category_name>/<string:item_name>')
 def show_item(category_name, item_name):
-    item = session.query(Item).filter_by(name=item_name).one()
+    item = session.query(Item).filter_by(name=item_name).first()
     owner = True
     return render_template("display_item.html", item=item, isowner=owner)
 
 
-# Edit a item
-@app.route('/catalog/<string:category>/<string:item>/edit',
+# Edit an item
+@app.route('/catalog/<string:category_name>/<string:item_name>/edit',
            methods=['GET', 'POST'])
 def edit_item(category_name, item_name):
     if request.method == 'POST':
-        name = request.form['category']
-        category = session.query(Category).filter_by(name=name).first()
+        category = session.query(Category).filter(Category.name == category_name).first()
+        item = session.query(Item).filter(Item.category_id == category.id, Item.name == item_name).first()
+        new_category_name = request.form['category']
+        new_category = session.query(Category).filter(Category.name == new_category_name).first()
         item.name = request.form['name']
         item.description = request.form['description']
-        item.category_id = category.id
+        item.category_id = new_category.id
         session.add(item)
         session.commit()
         return redirect(url_for('show_home'))
     else:
         categories = session.query(Category).all()
-        return render_template("edit_item.html", categories=categories,
-                                name=item_name)
+        category = session.query(Category).filter(Category.name == category_name).first()
+        item = session.query(Item).filter(Item.category_id == category.id, Item.name == item_name).first()
+        print(item_name)
+        return render_template('edit_item.html', categories=categories,
+                                name=item.name,
+                                description=item.description,
+                                selected=category_name)
 
 
 # Add item
-@app.route('/catalog/add', methods=['GET', 'POST'])
+@app.route('/catalog/additem', methods=['GET', 'POST'])
 def add_item():
     if request.method == 'POST':
         name = request.form['category']
@@ -79,10 +86,61 @@ def add_item():
         return redirect(url_for('show_home'))
     else:
         categories = session.query(Category).all()
-        return render_template("add_item.html", categories=categories)
+        return render_template('add_item.html', categories=categories)
 
 
-# @app.route('/catalog/addcategory', methods=['GET', 'POST'])
+# Delete an item
+@app.route('/catalog/<string:category_name>/<string:item_name>/delete',
+            methods=['GET', 'POST'])
+def delete_item(category_name, item_name):
+    if request.method == 'POST':
+        item = session.query(Item).filter_by(name=item_name).one()
+        session.delete(item)
+        session.commit()
+        return redirect(url_for('show_home'))
+    else:
+        print('delete_item')
+        return render_template('delete_item.html')
+
+
+# Add a category
+@app.route('/catalog/addcategory', methods=['GET', 'POST'])
+def add_category():
+    if request.method == 'POST':
+        name = request.form['category_name']
+        print name
+        category = Category(name=name, user_id=1)
+        session.add(category)
+        session.commit()
+        return redirect(url_for('show_home'))
+    else:
+        return render_template('category_name.html', action_name='Add')
+
+
+# Rename a category
+@app.route('/catalog/<string:category_name>/rename', methods=['GET', 'POST'])
+def rename_category(category_name):
+    if request.method == 'POST':
+        category = session.query(Category).filter(Category.name == category_name).one()
+        category.name = request.form['category_name']
+        session.add(category)
+        session.commit()
+        return redirect(url_for('show_home'))
+    else:
+        return render_template('category_name.html', action_name='Rename', name=category_name)
+
+
+# Delete a category
+@app.route('/catalog/<string:category_name>/delete', methods=['GET', 'POST'])
+def delete_category(category_name):
+    if request.method == 'POST':
+        print(category_name)
+        category = session.query(Category).filter(Category.name == category_name).one()
+        session.delete(category)
+        session.commit()
+        return redirect(url_for('show_home'))
+    else:
+        return render_template('delete_category.html')
 
 if __name__ == '__main__':
     app.debug = True

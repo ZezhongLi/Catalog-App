@@ -1,6 +1,6 @@
 from sqlalchemy import Column, ForeignKey, Integer, String, DateTime
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, backref
 from sqlalchemy import create_engine
 
 
@@ -15,15 +15,6 @@ class User(Base):
     picture = Column(String(1000))
 
 
-class Category(Base):
-    __tablename__ = 'category'
-
-    id = Column(Integer, primary_key = True)
-    name = Column(String(250), nullable = False)
-    user_id = Column(Integer, ForeignKey('user.id'))
-    user = relationship(User)
-
-
 class Item(Base):
     __tablename__ = 'item'
 
@@ -32,9 +23,19 @@ class Item(Base):
     date = Column(DateTime, nullable=False)
     description = Column(String(1000))
     category_id = Column(Integer, ForeignKey('category.id'))
-    category = relationship(Category, cascade='all')
+    category = relationship("Category")
     user_id = Column(Integer, ForeignKey('user.id'))
-    user = relationship(User)
+    user = relationship(User, cascade="save-update")
+
+
+class Category(Base):
+    __tablename__ = 'category'
+
+    id = Column(Integer, primary_key = True)
+    name = Column(String(250), nullable = False)
+    user_id = Column(Integer, ForeignKey('user.id'))
+    user = relationship(User, cascade="save-update")
+    items = relationship("Item", cascade="all, delete-orphan")
 
 
 engine = create_engine('sqlite:///catalog.db')
