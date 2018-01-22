@@ -1,0 +1,18 @@
+{% extends "main.html" %}
+{% block content %}
+<div>
+    <form method = 'post'>
+        <h3>{{ action_name }} Category</h3>
+        <input type="text" name="category_name" value="{{name}}"></input>
+        <br/>
+        <br/>
+        <button type="submit" id="submit">
+            <span></span> submit
+        </button>
+
+        <a href="{{url_for('show_home')}}">
+            <span></span> Cancel
+        </a>
+    </form>
+</div>
+{% endblock %}

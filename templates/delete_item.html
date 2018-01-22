@@ -1,0 +1,15 @@
+{% extends "main.html" %}
+{% block content %}
+<div>
+  <h3>Delete Item</h3>
+  <form method="post">
+    <p>Are you sure you want to delete?</p>
+    <button type="submit" id="submit">
+      <span></span> Delete
+    </button>
+    <a href="{{url_for('show_home')}}">
+      <span></span> Cancel
+    </a>
+  </form>
+</div>
+{% endblock %}
