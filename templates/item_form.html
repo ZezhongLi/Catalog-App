@@ -1,0 +1,18 @@
+<form method="post">
+        <p>Name</p>
+        <input type="text" name="name" value={{name}}></input>
+        <p>Description</p>
+        <textarea name="description">{{description}}</textarea>
+        <p>Category</p>
+            <select name="category">
+                {% for category in categories %}
+                <option value="{{category.name}}" {{'selected' if category.name==selected}}>{{category.name}}
+                </option>
+                {% endfor %}
+            </select>
+        <br>
+        <br>
+        <div>
+            <input type="submit"></input>
+        </div>
+    </form>
