@@ -1,14 +1,14 @@
 {% extends "main.html" %}
 {% block content %}
+<div class = "card">
+    <h3>{{item.name}}</h3>
+    <p>{{item.description}}</p>
 
-<h3>{{item.name}}</h3>
-<p>{{item.description}}</p>
-
-{% if isowner %}
-<p>
-<a href="{{url_for('edit_item', category_name=item.category.name, item_name=item.name)}}">Edit</a> 
-| <a href="{{url_for('delete_item', category_name=item.category.name, item_name=item.name)}}">Delete</a>
-</p>
-{% endif %}
-
+    {% if isowner %}
+    <p>
+    <a href="{{url_for('edit_item', category_name=item.category.name, item_name=item.name)}}"><button>Edit</button></a> 
+    <a href="{{url_for('delete_item', category_name=item.category.name, item_name=item.name)}}"><button>Delete</button></a>
+    </p>
+    {% endif %}
+</div>
 {% endblock %}

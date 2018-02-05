@@ -1,6 +1,6 @@
 {% extends "main.html" %}
 {% block content %}
-<div>
+<div class = "card">
   <h3>Delete Item</h3>
   <form method="post">
     <p>Are you sure you want to delete?</p>
@@ -8,7 +8,7 @@
       <span></span> Delete
     </button>
     <a href="{{url_for('show_home')}}">
-      <span></span> Cancel
+      <span></span> <button>Cancel</button>
     </a>
   </form>
 </div>

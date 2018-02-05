@@ -30,7 +30,6 @@ def show_home():
 def show_category(category_name):
     categories = session.query(Category).all()
     category = session.query(Category).filter_by(name=category_name).first()
-    print category.id
     citems = session.query(Item).filter_by(category_id=category.id)
     return render_template("index.html", categories=categories,
                            items=citems, name=category.name)
@@ -108,7 +107,6 @@ def delete_item(category_name, item_name):
 def add_category():
     if request.method == 'POST':
         name = request.form['category_name']
-        print name
         category = Category(name=name, user_id=1)
         session.add(category)
         session.commit()
@@ -144,4 +142,4 @@ def delete_category(category_name):
 
 if __name__ == '__main__':
     app.debug = True
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='127.0.0.1', port=9090)
