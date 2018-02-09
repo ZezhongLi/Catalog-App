@@ -2,7 +2,7 @@
 {% block content %}
 <div id="main_block">
     <div id="categories">
-        {% if True %}
+        {% if 'username' in session %}
         <p>
             <a href="{{ url_for('add_category') }}">Add Category</a>
         </p>
@@ -11,14 +11,16 @@
         {% for category in categories %}
             <p>
                 <a href="{{ url_for('show_category', category_name=category.name) }}">{{category.name}}</a> 
+                {% if category.user_id == session.user_id %}
                 ( <a href="{{ url_for('delete_category', category_name=category.name) }}">Delete</a>
                 | <a href="{{ url_for('rename_category', category_name=category.name) }}">Rename</a> )
+                {% endif %}
             </p>
         {% endfor %}
     </div>
 
     <div id="items">
-        {% if True %}
+        {% if 'username' in session %}
         <p>
             <a href="{{ url_for('add_item') }}">Add Item</a>
         </p>
