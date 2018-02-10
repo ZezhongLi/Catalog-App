@@ -288,7 +288,6 @@ def delete_item(category_name, item_name):
     item = session.query(Item).filter_by(name=item_name).one()
     if not isOwner(item.user_id):
         redirect(url_for('show_home'))
-    print("fucker!!")
     if request.method == 'POST':
         session.delete(item)
         session.commit()
