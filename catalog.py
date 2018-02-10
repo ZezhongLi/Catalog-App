@@ -30,7 +30,7 @@ session = DBSession()
 # Create a state token to prevent request forgery
 # Store it in the session for later validation
 @app.route('/login')
-def showLogin():
+def show_login():
     state = ''.join(
                 random.choice(string.ascii_uppercase + string.digits)
                 for x in range(32))
@@ -131,7 +131,6 @@ def gdisconnect():
     url = 'https://accounts.google.com/o/oauth2/revoke?token=%s' % access_token
     h = httplib2.Http()
     result = h.request(url, 'GET')[0]
-    print(result)
 
     if result['status'] == '200':
         # Reset the user's sesson.
@@ -179,9 +178,16 @@ def login_required(f):
     @wraps(f)
     def wrapper(*args, **kwds):
         if 'username' not in login_session:
-            return redirect('/login')
+            redirect(url_for('show_login'))
         return f(*args, **kwds)
     return wrapper
+
+
+def isOwner(user_id):
+    if 'user_id' in login_session:
+        if login_session['user_id'] == user_id:
+            return True
+    return False
 
 
 # Home page
@@ -224,13 +230,15 @@ def show_item(category_name, item_name):
            methods=['GET', 'POST'])
 @login_required
 def edit_item(category_name, item_name):
-    if request.method == 'POST':
-        category = session.query(Category) \
+    category = session.query(Category) \
             .filter(Category.name == category_name) \
             .first()
-        item = session.query(Item) \
-            .filter(Item.category_id == category.id, Item.name == item_name) \
-            .first()
+    item = session.query(Item) \
+        .filter(Item.category_id == category.id, Item.name == item_name) \
+        .first()
+    if not isOwner(item.user_id):
+        return redirect(url_for('show_home'))
+    if request.method == 'POST':
         new_category_name = request.form['category']
         new_category = session.query(Category) \
             .filter(Category.name == new_category_name) \
@@ -243,13 +251,6 @@ def edit_item(category_name, item_name):
         return redirect(url_for('show_home'))
     else:
         categories = session.query(Category).all()
-        category = session.query(Category) \
-            .filter(Category.name == category_name) \
-            .first()
-        item = session.query(Item) \
-            .filter(Item.category_id == category.id, Item.name == item_name) \
-            .first()
-        print(item_name)
         return render_template(
                 'edit_item.html',
                 categories=categories,
@@ -281,11 +282,14 @@ def add_item():
 # Delete an item
 @app.route(
     '/catalog/<string:category_name>/<string:item_name>/delete',
-    methods=['GET', 'DELETE'])
+    methods=['GET', 'POST'])
 @login_required
 def delete_item(category_name, item_name):
-    if request.method == 'DELETE':
-        item = session.query(Item).filter_by(name=item_name).one()
+    item = session.query(Item).filter_by(name=item_name).one()
+    if not isOwner(item.user_id):
+        redirect(url_for('show_home'))
+    print("fucker!!")
+    if request.method == 'POST':
         session.delete(item)
         session.commit()
         return redirect(url_for('show_home'))
@@ -311,10 +315,12 @@ def add_category():
 @app.route('/catalog/<string:category_name>/rename', methods=['GET', 'POST'])
 @login_required
 def rename_category(category_name):
-    if request.method == 'POST':
-        category = session.query(Category) \
+    category = session.query(Category) \
                     .filter(Category.name == category_name) \
                     .one()
+    if not isOwner(category.user_id):
+        return redirect(url_for('show_home'))
+    if request.method == 'POST':
         category.name = request.form['category_name']
         session.add(category)
         session.commit()
@@ -327,14 +333,15 @@ def rename_category(category_name):
 
 
 # Delete a category
-@app.route('/catalog/<string:category_name>/delete', methods=['GET', 'DELETE'])
+@app.route('/catalog/<string:category_name>/delete', methods=['GET', 'POST'])
 @login_required
 def delete_category(category_name):
-    if request.method == 'DELETE':
-        print(category_name)
-        category = session.query(Category) \
+    category = session.query(Category) \
             .filter(Category.name == category_name) \
             .one()
+    if not isOwner(category.user_id):
+        return redirect(url_for('show_home'))
+    if request.method == 'POST':
         session.delete(category)
         session.commit()
         return redirect(url_for('show_home'))
@@ -378,6 +385,6 @@ def itemJSON(category_name, item_name):
 
 
 if __name__ == '__main__':
-    app.secret_key = 'super_secret_key'
+    app.secret_key = 'Njoa(DW"V}J7+eQmOrS,12VPP|Kq{D'
     app.debug = True
     app.run(host='127.0.0.1', port=9090)
